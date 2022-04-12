@@ -1,0 +1,234 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf250
+{\fonttbl\f0\fmodern\fcharset0 CourierNewPS-BoldMT;\f1\fmodern\fcharset0 CourierNewPSMT;\f2\fmodern\fcharset0 CourierNewPS-BoldItalicMT;
+\f3\fmodern\fcharset0 CourierNewPS-ItalicMT;\f4\fmodern\fcharset0 Courier-Bold;\f5\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;\red135\green5\blue136;\red223\green223\blue223;\red254\green10\blue255;
+\red7\green109\blue0;\red0\green109\blue109;}
+\margl1440\margr1440\vieww29000\viewh21440\viewkind0
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 \ul \ulc0 Gen. Description of Terminology\
+\
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f1\b0\fs24 \cf0 \ulnone In the SecTag terminology, \ul Concepts\ulnone  are unique strings that represent particular section headings.  \
+\
+Each concept has one or more \ul Synonyms\ulnone , which are particular strings that may be used to specify a section in an actual note.  The mapping between concepts & synonyms is stored in the sidcidnew_lnk table. Information about synonyms can be found in the strings_tbl.  In this table, each synonym is associated with a string, source, and string type.  The string types are defined as follows:\
+\
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+
+\f2\i\b \cf0 Synonym String types
+\f1\i0\b0 \
+\pard\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1260\ql\qnatural\pardirnatural
+\cf0 - KM	the unique string name for the concept\
+- PT	a preferred term\
+- SS	a suppressible synonym (not universally defined)\
+- NORM 	a normalized term\
+- NORM_COMP	a normalized term without stopwords\
+- ABAC	an abbreviation or acronym (not universally defined)\
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+\cf0 \
+Concepts are defined within a hierarchy, so each concept has an associated level & location within a tree.  Because the concept hierarchy is polyhierarchical, the terminology specifies particular \ul Relationships\ulnone  between concepts.  There are 4 different relationship types (reels) specified in the concept_rel table:\
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 \ul \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+
+\f2\i\fs24 \cf0 \ulnone Relationship types
+\f1\i0\b0 \ul \
+\pard\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1260\ql\qnatural\pardirnatural
+\cf0 \ulnone - chd0	Connects a level 1 concept with a root (level 0) concept\
+- chd	Defines the preferred (i.e., primary) child-parent relationship between two concepts\
+- alt	Defines a alternative child-parent relationship between two concepts\
+- comp_chd	Links a COMPOSITE concepts with its component ATOMIC concepts\
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 \ul \
+Table Structure\
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \ulnone \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li120\ql\qnatural\pardirnatural
+
+\f3\i\b0\fs26 \cf0 \ul Concept Info Tables
+\f0\i0\b\fs28 \ulnone \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li440\fi-280\ql\qnatural\pardirnatural
+\cf0 concepts_src	
+\f3\i\b0\fs24 associates each concept ID (cid) with one or more source (src) and source ID (src_id)
+\f1\i0 \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 id	Uniq ID of concept,src_id pair\
+cid	Unique Concept ID\
+src	Source of concept (LOINC, E&M, or NULL)\
+src_id	ID of the concept within "src" vocabulary, where applicable\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 concepts_tbl	
+\f3\i\b0\fs24 associates each concept ID (cid) with information like unique name (kmname), level in hierarchy (level), etc. 
+\f1\i0 \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 cid	Unique Concept ID\
+kmname	Unique concept name\
+level	Level in hierarchy, staring at zero\
+tree	Location in tree\
+concepttype	Concept type (ATOMIC or COMPOSITE); composite concepts are the combination of two or more atomic concepts\
+datatype	Data type (default,prose,short,date,title,numeric)\
+next_section	cid of section likely to follow current section.  This is a rule-based method of predicting the next section.\
+\pard\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li120\ql\qnatural\pardirnatural
+
+\f3\i\fs26 \cf0 \ul Synonym info Table\
+\pard\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+
+\f1\i0\fs24 \cf0 \ulnone \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 strings_tbl	
+\f3\i\b0\fs24 associates each section synonym ID (sid) with information like string (str), string type (str_type), etc.
+\f0\i0\b \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+
+\f1\b0 \cf0 sid	Synonym ID\
+str	Synonym string\
+str_type	Type of string (KM,PT,SS,NORM,NORM_COMP,ABAC)\
+src	Source of synonym (LOINC, ptsummary, website, NULL)\
+src_id	ID of synonym within "src" vocabulary, where applicable\
+\pard\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li120\ql\qnatural\pardirnatural
+
+\f3\i\fs26 \cf0 \ul Concept-Synonym Association Table
+\f1\i0\fs24 \ulnone \
+\pard\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 sidcidnew_lnk	
+\f3\i\b0\fs24 associates each section synonym ID with one concept ID
+\f0\i0\b \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+
+\f1\b0 \cf0 relid	Unique ID for sid/cid pair\
+sid	Synonym ID\
+cid	Concept ID\
+\pard\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li120\ql\qnatural\pardirnatural
+
+\f3\i\fs26 \cf0 \ul Concept-Concept Association Table
+\f1\i0\fs24 \ulnone \
+\pard\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 concept_rel	
+\f3\i\b0\fs24 specifies relationship between two concept IDs (cid1 & cid2)
+\f1\i0 \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 rel_id	Unique ID for cid1/cid2 pair\
+cid1	First concept ID\
+cid2	Second concept ID\
+rel	Type of relationship (chd0,chd,comp_chd,alt)\
+\
+\
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 \ul Common Queries
+\f1\b0\fs24 \ulnone \
+\
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f0\b \cf0 1. Find the various strings for a particular concept.   \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f1\b0 \cf0 \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 The following query shows all the strings for cid = 315, which is the ID for family_medical_history:\
+\
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li780\ql\qnatural\pardirnatural
+
+\f4\b\fs22 \cf2 \cb3 SELECT
+\f5\b0 \cf0  l\cf4 .\cf0 sid\cf4 ,\cf0  s\cf4 .\cf0 str\cf4 ,\cf0  s\cf4 .\cf0 str_type\
+
+\f4\b \cf2 FROM
+\f5\b0 \cf0  \cf5 `sidcidnew_lnk`\cf0  l\
+
+\f4\b \cf2 LEFT
+\f5\b0 \cf0  
+\f4\b \cf2 JOIN
+\f5\b0 \cf0  strings_tbl s 
+\f4\b \cf2 ON
+\f5\b0 \cf0  l\cf4 .\cf0 sid \cf4 =\cf0  s\cf4 .\cf0 sid\
+
+\f4\b \cf2 WHERE
+\f5\b0 \cf0  l\cf4 .\cf0 cid \cf4 =\cf6 315
+\f1\fs24 \cf0 \cb1 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1440\fi20\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f0\b \cf0 2. Find the children of a particular concept:\
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f1\b0 \cf0 \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 This query shows the children of concept 315 (family_medical_history):\
+\
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li780\ql\qnatural\pardirnatural
+
+\f4\b\fs22 \cf2 \cb3 SELECT
+\f5\b0 \cf0  r\cf4 .\cf0 cid2\cf4 ,\cf0  r\cf4 .\cf0 rel\cf4 ,\cf0  c\cf4 .\cf0 kmname\cf4 ,\cf0  c\cf4 .\cf0 level\cf4 ,\cf0  c\cf4 .\cf0 tree\cf4 ,\cf0  c\cf4 .\cf0 datatype\
+
+\f4\b \cf2 FROM
+\f5\b0 \cf0  \cf5 `concept_rel`\cf0  r\
+
+\f4\b \cf2 LEFT
+\f5\b0 \cf0  
+\f4\b \cf2 JOIN
+\f5\b0 \cf0  concepts_tbl c 
+\f4\b \cf2 ON
+\f5\b0 \cf0  r\cf4 .\cf0 cid2 \cf4 =\cf0  c\cf4 .\cf0 cid\
+
+\f4\b \cf2 WHERE
+\f5\b0 \cf0  cid1 \cf4 =\cf6 315\
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1440\fi20\ql\qnatural\pardirnatural
+
+\f1\fs24 \cf0 \cb1 \
+\
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f0\b \cf0 3. Find the parents of a particular concept:\
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+
+\f1\b0 \cf0 \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li540\ql\qnatural\pardirnatural
+\cf0 This query shows the parents of concept 315 (family_medical_history):\
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li780\ql\qnatural\pardirnatural
+
+\f4\b\fs22 \cf2 \cb3 SELECT
+\f5\b0 \cf0  r\cf4 .\cf0 cid1\cf4 ,\cf0  r\cf4 .\cf0 rel\cf4 ,\cf0  c\cf4 .\cf0 kmname\cf4 ,\cf0  c\cf4 .\cf0 level\cf4 ,\cf0  c\cf4 .\cf0 tree\cf4 ,\cf0  c\cf4 .\cf0 datatype\
+
+\f4\b \cf2 FROM
+\f5\b0 \cf0  \cf5 `concept_rel`\cf0  r\
+
+\f4\b \cf2 LEFT
+\f5\b0 \cf0  
+\f4\b \cf2 JOIN
+\f5\b0 \cf0  concepts_tbl c 
+\f4\b \cf2 ON
+\f5\b0 \cf0  r\cf4 .\cf0 cid1 \cf4 =\cf0  c\cf4 .\cf0 cid\
+
+\f4\b \cf2 WHERE
+\f5\b0 \cf0  cid2 \cf4 =\cf6 315
+\f1\fs24 \cf0 \cb1 \
+\pard\tx2540\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li160\ql\qnatural\pardirnatural
+\cf0 \
+}
