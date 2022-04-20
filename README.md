@@ -2,7 +2,7 @@
 
 This is the README for the paper "Learning to Revise References for Faithful Summarization" by Griffin Adams, Han-Chin Shing, Qing Sun, Christopher Winestock, Kathleen McKeown, and Noémie Elhadad.  This research was done while Griffin (PhD student at Columbia University) was an intern with the [Amazon Comprehend Medical](https://aws.amazon.com/comprehend/medical/) team.
 
-If you have any questions about the paper or code, please feel free to contact griffin.adams@columbia.edu or raise an issue on GitHub.
+If you have any questions about the paper or issues running the code, please don't hesitate to contact griffin.adams@columbia.edu or raise an issue on GitHub!  We will try to respond as promptly as possible.
 
 ## High-Level Approach
 
@@ -24,6 +24,53 @@ To be able to run models and sync results, you will need to create an account on
 pip install wandb
 wandb login
 ```
+
+Feel free to change the Weights & Biases endpoints in `ref_reviser/main.py` and `gen_transformers/main.py` settings to point to your own personal **project** and **entity**.  Otherwise, they will be available at [Our Public Reference Revision Project](https://wandb.ai/griffinadams/ref-improve) and [Our Public Summarization Project](https://wandb.ai/griffinadams/mimic-sum), respectively.
+
+```angular2html
+logger = pl_loggers.WandbLogger(
+    name=args.experiment,
+    save_dir=experiment_dir,
+    offline=args.debug or args.offline,
+    project='mimic-sum',
+    entity='griffinadams',
+)
+```
+
+### Entity Extraction and Linking
+
+For entity extraction and linking, we use the publicly available API provided by Amazon Comprehend Medical.  Here are some [instructions](https://docs.aws.amazon.com/comprehend-medical/latest/dev/comprehendmedical-gettingstarted.html) on how to get started (only Step 1 is necessary and Step 4 is helpful to show the output format).  If you would like to change the AWS region, please go to `preprocess/entity/extract_ents.py` and modify the `region_name` field:
+
+```angular2html
+def get_prod_hera_client():
+    client = boto3.client(service_name='comprehendmedical', region_name='us-west-2')
+    return client
+```
+
+New users receive a free tier of 8.5 million characters, which should be enough for evaluating summaries, but may not cover perturber pre-training and inference. Please visit [pricing page](https://aws.amazon.com/comprehend/medical/pricing/) for more information.  You can also replace the function `#get_ents` in `preprocess/entity/extract_ents.py` with custom entity extraction code, i.e., [SciSpacy](https://allenai.github.io/scispacy/), [MedCAT](https://github.com/CogStack/MedCAT), [https://ctakes.apache.org/](cTAKES), or [CLAMP](https://clamp.uth.edu/). If you override `#get_ents`, it must return an object with the following keys: `icd`, `rx`, and `ent`.  *icd* entities are diagnoses, *rx* stands for **RxNorm** which provides normalized names for clinical drugs, and *ent* returns the output from ACM's [`DetectEntitiesV2`](https://docs.aws.amazon.com/comprehend-medical/latest/api/API_DetectEntitiesV2.html), which inspects clinical text for a variety of medical entities and returns specific information about them such as entity category, location, and confidence score on that information.  These can produce overlapping spans and the code prioritizes ICD and RXNorm entities over the *ent* category.  Given that this division is unique to ACM, we recommend including diagnoses in *icd*, all medications in *rx*, and all other entity categories in *ent*.  The values of *icd, rx, ent* are each lists, where a single item represent a single entity span and must include the following keys:
+
+```
+Type: semantic type of entity
+BeginOffset: the string index of the beginning of the entity span
+EndOffset: the string index of the end of the entity span
+Text: raw mention span of the entity, i.e, 'Heparin'.
+Category: High-level category to decide which semantic groups get filtered out.  We only filter out an entity if its category is in {'ANATOMY', 'TIME_EXPRESSION', 'PROTECTED_HEALTH_INFORMATION'}.
+```
+
+**Type** must be one of the following keys in `ENT_TYPE_MAP` and will be mapped to one of 5 categories:
+
+```angular2html
+ENT_TYPE_MAP = {
+    'DX_NAME': 'dx',
+    'PROCEDURE_NAME': 'procedure',
+    'TREATMENT_NAME': 'treatment',
+    'TEST_NAME': 'test',
+    'BRAND_NAME': 'med',
+    'GENERIC_NAME': 'med'
+}
+```
+
+The `Type` information is only needed for perturber pre-training so if you are just using entities for summary or revision analysis, feel free to put a dummy category for each `Type`, i.e., `DX_NAME`.
 
 ## Overview
 
