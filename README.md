@@ -1,6 +1,6 @@
 # ReviseSum
 
-This is the README for the paper "Learning to Revise References for Faithful Summarization" by Griffin Adams, Han-Chin Shing, Qing Sun, Christopher Winestock, Kathleen McKeown, and Noémie Elhadad.  This research was done while Griffin (PhD student at Columbia University) was an intern with the [Amazon Comprehend Medical](https://aws.amazon.com/comprehend/medical/) team.
+This is the README for the paper ["Learning to Revise References for Faithful Summarization"](https://arxiv.org/abs/2204.10290) by Griffin Adams, Han-Chin Shing, Qing Sun, Christopher Winestock, Kathleen McKeown, and Noémie Elhadad.  This research was done while Griffin (PhD student at Columbia University) was an intern with the [Amazon Comprehend Medical](https://aws.amazon.com/comprehend/medical/) team.
 
 If you have any questions about the paper or issues running the code, please don't hesitate to contact griffin.adams@columbia.edu or raise an issue on GitHub!  We will try to respond as promptly as possible.
 

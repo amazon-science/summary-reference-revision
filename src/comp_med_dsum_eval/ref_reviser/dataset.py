@@ -80,22 +80,10 @@ class SingleBatchCollate:
        return batch[0]
 
 
-def compute_prefix(ent_types):
-    outputs = []
-    for ent_type in ENT_ORDER:
-        if ent_type not in ent_types:
-            continue
-        ent_str = ' <ent-sep> '.join(list(set(ent_types[ent_type])))
-        outputs.append(
-            f'<{ent_type}> {ent_str} </{ent_type}>'
-        )
-    return ' '.join(outputs)
-
-
 class ReviseDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, data_fn, tokenizer, debug=False, max_val_examples=1024,
                  denoise_only=False, contrast_only=False, pos_only=False, contrast_input_strategy='worst',
-                 remove_redress=False, remove_same_sum=False):
+                 remove_redress=False, remove_same_sum=False, remove_codes=False):
         super().__init__()
 
         with open(data_fn, 'r') as fd:
@@ -109,6 +97,7 @@ class ReviseDataModule(pl.LightningDataModule):
         self.pos_only = pos_only
         self.remove_redress = remove_redress
         self.remove_same_sum = remove_same_sum
+        self.remove_codes = remove_codes
 
         if self.debug:
             self.train_examples = self.val_examples = examples
@@ -136,7 +125,7 @@ class ReviseDataModule(pl.LightningDataModule):
             self.train_examples, self.tokenizer, split='train',
             denoise_only=self.denoise_only, contrast_only=self.contrast_only,
             contrast_input_strategy=self.contrast_input_strategy, pos_only=self.pos_only,
-            remove_redress=self.remove_redress, remove_same_sum=self.remove_same_sum
+            remove_redress=self.remove_redress, remove_same_sum=self.remove_same_sum, remove_codes=self.remove_codes
         )
         return DataLoader(train_dataset, **kwargs)
 
@@ -154,7 +143,7 @@ class ReviseDataModule(pl.LightningDataModule):
         val_dataset = ReviseDataset(
             val_examples, self.tokenizer, split='val', denoise_only=False,
             contrast_only=False, contrast_input_strategy='worst', pos_only=False,
-            remove_redress=False, remove_same_sum=False
+            remove_redress=False, remove_same_sum=False, remove_codes=self.remove_codes
         )
         return DataLoader(val_dataset, **kwargs)
 
@@ -162,7 +151,7 @@ class ReviseDataModule(pl.LightningDataModule):
 class ReviseDataset(Dataset):
     def __init__(self, examples, tokenizer, max_output_length=128, max_input_length=None, split='train',
                  denoise_only=False, contrast_only=False, contrast_input_strategy='worst', pos_only=False,
-                 remove_redress=False, remove_same_sum=False):
+                 remove_redress=False, remove_same_sum=False, remove_codes=False):
         self.examples = examples
         self.tokenizer = tokenizer
         self.max_output_length = max_output_length
@@ -175,6 +164,7 @@ class ReviseDataset(Dataset):
         self.pos_only = pos_only
         self.remove_redress = remove_redress
         self.remove_same_sum = remove_same_sum
+        self.remove_codes = remove_codes
         self.contrast_input_strategy = contrast_input_strategy
         self.example_id_2_dataset_idx = defaultdict(list)
         for dataset_idx, example in enumerate(self.examples):
@@ -193,7 +183,6 @@ class ReviseDataset(Dataset):
         source_sents = source['sents']
         target_sent = example['target_sent']
         target_sent_clean = remove_tags_from_sent(target_sent)
-        target_cov = example['source_to_target_coverage']
 
         source_toks = tokenize(' '.join(source_sents))
         target_toks = tokenize(target_sent_clean)
@@ -211,21 +200,20 @@ class ReviseDataset(Dataset):
         # Get alignment between distractor context and distractor inputs
         dd_frags = parse_extractive_fragments(distractor_context_toks, distractor_input_toks, remove_stop=True)
         dd_source_extract_bucket = resolve_coverage_bucket(dd_frags['coverage'])
-        dd_source_extract_code = f'<source-extract-{dd_source_extract_bucket}>'
+        dd_source_extract_code = '' if self.remove_codes else f'<source-extract-{dd_source_extract_bucket}>'
 
         # Get alignment between this target (as input) and distractor sentence (as decoder output)
         cd_input_frags = parse_extractive_fragments(target_toks, distractor_input_toks, remove_stop=True)
         cd_input_extract_bucket = resolve_coverage_bucket(cd_input_frags['coverage'])
-        cd_input_extract_code = f'<input-extract-{cd_input_extract_bucket}>'
+        cd_input_extract_code = '' if self.remove_codes else f'<input-extract-{cd_input_extract_bucket}>'
 
         # Get alignment between this target sentence (as decoder output) and distractor (as input)
         dc_input_frags = parse_extractive_fragments(distractor_input_toks, target_toks, remove_stop=True)
         dc_input_extract_bucket = resolve_coverage_bucket(dc_input_frags['coverage'])
-        dc_input_extract_code = f'<input-extract-{dc_input_extract_bucket}>'
+        dc_input_extract_code = '' if self.remove_codes else f'<input-extract-{dc_input_extract_bucket}>'
 
         perturbs = example['perturb']
         perturb_sents, perturb_covs = perturbs['sents'], perturbs['source_to_perturb_coverage']
-        noisy_halluc = [len(re.findall(r'local=1', x)) for x in perturb_sents]
 
         # Generate Encoder Inputs
         # 1. masked target
@@ -243,16 +231,15 @@ class ReviseDataset(Dataset):
         perturb_target_idx = int(np.random.randint(len(perturb_covs)))
         perturb_target_sent = perturb_sents[perturb_target_idx]
         perturb_target_sent_clean = remove_tags_from_sent(perturb_target_sent)
-        # noisy_halluc_bucket = str(min(noisy_halluc[perturb_input_idx], 10))
-        # noisy_halluc_code = f'<halluc-{noisy_halluc_bucket}>'
+
         source_extract_bucket = resolve_coverage_bucket(source_extractive_frags['coverage'])
-        source_extract_code = f'<source-extract-{source_extract_bucket}>'
+        source_extract_code = '' if self.remove_codes else f'<source-extract-{source_extract_bucket}>'
 
         perturb_toks = tokenize(perturb_sents[perturb_input_idx])
         perturb_input_clean = remove_tags_from_sent(perturb_sents[perturb_input_idx])
         perturb_frags = parse_extractive_fragments(perturb_toks, target_toks, remove_stop=True)
         perturb_input_extract_bucket = resolve_coverage_bucket(perturb_frags['coverage'])
-        perturb_input_extract_code = f'<input-extract-{perturb_input_extract_bucket}>'
+        perturb_input_extract_code = '' if self.remove_codes else f'<input-extract-{perturb_input_extract_bucket}>'
 
         # Positive Inputs
         # distractor input, context -> target
@@ -292,11 +279,7 @@ class ReviseDataset(Dataset):
             targets = [target_sent_clean] * 2
         else:
             targets = [target_sent_clean] * 4 + [perturb_target_sent_clean]
-        # print('NEGATIVE (d): ', distractor_context_input + ' -> ' + target_sent_clean)
-        # print('NEGATIVE (n): ', noise_neg_input + ' -> ' + perturb_target_sent_clean)
-        # print('POSITIVE (d): ', distractor_pos_input + ' -> ' + target_sent_clean)
-        # print('POSITIVE (n): ', noise_pos_input + ' -> ' + target_sent_clean)
-        # print(contrast_inputs[:2])
+
         with self.tokenizer.as_target_tokenizer():
             labels = self.tokenizer(
                 targets,
@@ -331,13 +314,14 @@ class ReviseDataset(Dataset):
 
 
 class GenerateDataset(Dataset):
-    def __init__(self, examples, tokenizer, max_output_length=128, max_input_length=None):
+    def __init__(self, examples, tokenizer, max_output_length=128, max_input_length=None, remove_codes=False):
         self.examples = examples
         self.tokenizer = tokenizer
         self.max_output_length = max_output_length
         self.max_input_length = min(
             1024, self.tokenizer.model_max_length if max_input_length is None else max_input_length)
         self.pad_token_id = tokenizer.pad_token_id
+        self.remove_codes = remove_codes
 
     def __getitem__(self, idx):
         example = self.examples[idx]
@@ -356,14 +340,18 @@ class GenerateDataset(Dataset):
         input_extractive_frags = parse_extractive_fragments(source_toks, target_toks, remove_stop=True)
         input_extract_bucket = resolve_coverage_bucket(input_extractive_frags['coverage'])
 
-        prefix_codes = []
-        meta_codes = []
-        for j in range(11):
-            meta_codes.append({
-                'input_extract_code': int(input_extract_bucket),
-                'source_extract_code': j
-            })
-            prefix_codes.append(f'<input-extract-{input_extract_bucket}><source-extract-{j}>')
+        if self.remove_codes:
+            prefix_codes = ['']  # No prefix codes (1 generation)
+            meta_codes = {'input_extract_code': -1, 'source_extract_code': -1}  # Dummy Values
+        else:
+            prefix_codes = []
+            meta_codes = []
+            for j in range(11):
+                meta_codes.append({
+                    'input_extract_code': int(input_extract_bucket),
+                    'source_extract_code': j
+                })
+                prefix_codes.append(f'<input-extract-{input_extract_bucket}><source-extract-{j}>')
 
         # ENCODER
         # Generate Encoder Inputs
@@ -392,28 +380,3 @@ class GenerateDataset(Dataset):
 
     def __len__(self):
         return len(self.examples)
-
-
-if __name__ == '__main__':
-    from transformers import AutoTokenizer
-    hf_model = 'sshleifer/bart-tiny-random'
-    print(f'Loading tokenizer from {hf_model}')
-    tokenizer = AutoTokenizer.from_pretrained(hf_model)
-    data_dir = '/efs/griadams/bhc/revise'
-    data_fn = 'dataset_mini.json'
-    from scipy.stats import pearsonr
-
-    fn = os.path.join(data_dir, data_fn)
-    with open(fn, 'r') as fd:
-        examples = ujson.load(fd)
-    dataset = ReviseDataset(examples, tokenizer)
-    examples = []
-    covs = []
-    frag = []
-    for example in dataset:
-        covs.append(example[0])
-        frag.append(example[1])
-
-    corr = pearsonr(covs, frag)[0]
-    print(corr)
-    print('here')

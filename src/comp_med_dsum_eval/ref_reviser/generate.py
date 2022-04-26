@@ -172,6 +172,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu_device', default=None, type=int)
     parser.add_argument('--chunk_idx', default=None, type=int)
     parser.add_argument('-only_eval', default=False, action='store_true')
+    parser.add_argument('-remove_codes', default=False, action='store_true')
 
     # Post-Hoc Editing Use Case
     parser.add_argument('-load_model_generated', default=False, action='store_true')
@@ -254,7 +255,7 @@ if __name__ == '__main__':
     electra_tokenizer = AutoTokenizer.from_pretrained(ELECTRA_HF_MODEL)
     electra_model = AutoModelForPreTraining.from_pretrained(ELECTRA_HF_MODEL)
 
-    dataset = GenerateDataset(examples, tokenizer)
+    dataset = GenerateDataset(examples, tokenizer, remove_codes=args.remove_codes)
     stats = generate_revised_texts(gpu, dataset, checkpoint_path, tokenizer, electra_model, electra_tokenizer)
     stats = pd.DataFrame(stats)
     stats = stats.select_dtypes('number')
