@@ -23,11 +23,12 @@ os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 PERTURB_MODEL = '/efs/griadams/dsum/weights/perturber/ent_sample/checkpoint-100000'
 
 
-def extend_tokenizer(tokenizer):
+def extend_tokenizer(tokenizer, add_control_codes=True):
     extra_special_toks = ['<sep>']
-    source_extract = [f'<source-extract-{i}>' for i in range(11)]
-    input_extract = [f'<input-extract-{i}>' for i in range(11)]
-    extra_special_toks += source_extract + input_extract
+    if add_control_codes:
+        source_extract = [f'<source-extract-{i}>' for i in range(11)]
+        input_extract = [f'<input-extract-{i}>' for i in range(11)]
+        extra_special_toks += source_extract + input_extract
     num_added_toks = tokenizer.add_special_tokens({'additional_special_tokens': extra_special_toks})
     print(f'Adding {num_added_toks} special prompt tokens to tokenizer and embedding matrix')
     return extra_special_toks
@@ -48,6 +49,7 @@ if __name__ == '__main__':
     parser.add_argument('--restore_path', default=None, type=str)
     parser.add_argument('--seed', default=1992, type=int)
     # Ablations for evaluation
+    parser.add_argument('-remove_codes', default=False, action='store_true')
     parser.add_argument('-remove_contrast', default=False, action='store_true')
     parser.add_argument('-remove_mask', default=False, action='store_true')
     parser.add_argument('-remove_neg', default=False, action='store_true')
@@ -102,7 +104,7 @@ if __name__ == '__main__':
 
     print(f'Loading tokenizer from {args.hf_model}')
     tokenizer = AutoTokenizer.from_pretrained(args.hf_model)
-    extend_tokenizer(tokenizer)
+    extend_tokenizer(tokenizer, add_control_codes=not args.remove_codes)
     tokenizer_out_dir = os.path.join(experiment_dir, 'tokenizer')
     os.makedirs(tokenizer_out_dir, exist_ok=True)
     tokenizer.save_pretrained(tokenizer_out_dir)
@@ -112,7 +114,7 @@ if __name__ == '__main__':
         data_dir, data_fn, tokenizer, debug=args.debug,
         denoise_only=args.remove_contrast, contrast_only=args.remove_mask,
         pos_only=args.remove_neg, contrast_input_strategy=args.contrast_input_strategy,
-        remove_redress=args.remove_redress, remove_same_sum=args.remove_same_sum
+        remove_redress=args.remove_redress, remove_same_sum=args.remove_same_sum, remove_codes=args.remove_codes
     )
 
     logger = pl_loggers.WandbLogger(

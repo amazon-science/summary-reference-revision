@@ -101,6 +101,7 @@ def process(record, data_dir, revise_experiment, replace_func):
     with open(orig_context_fn, 'r') as fd:
         orig_contexts = ujson.load(fd)
 
+    # Recomment if you want to run these evaluations on the ent annotated versions
     # ent_fn = os.path.join(data_dir, 'acm_output', f'{example_id}.json')
     # with open(ent_fn) as fd:
     #     ents = ujson.load(fd)
