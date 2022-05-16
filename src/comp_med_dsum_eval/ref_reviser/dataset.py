@@ -342,7 +342,7 @@ class GenerateDataset(Dataset):
 
         if self.remove_codes:
             prefix_codes = ['']  # No prefix codes (1 generation)
-            meta_codes = {'input_extract_code': -1, 'source_extract_code': -1}  # Dummy Values
+            meta_codes = [{'input_extract_code': -1, 'source_extract_code': -1}]  # Dummy Values
         else:
             prefix_codes = []
             meta_codes = []
