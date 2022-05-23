@@ -69,9 +69,7 @@ if __name__ == '__main__':
         'revised_max_coverage',
         'revised_extractive'
     ])
-    parser.add_argument('--reviser_experiment', default='yay', choices=[
-        'yay', 'no_mask', 'no_neg', 'no_redress', 'no_same_sum',
-    ])
+    parser.add_argument('--reviser_experiment', default='yay')
 
     args = parser.parse_args()
 
