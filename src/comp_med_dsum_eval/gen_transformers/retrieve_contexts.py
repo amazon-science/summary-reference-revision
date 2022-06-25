@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     data_dir = os.path.join(args.input_dir, args.target)
     experiment_dir = os.path.join(data_dir, 'mimic_sum', 'results', args.experiment)
-    gen_fn = os.path.join(experiment_dir, 'outputs_annotated.csv')  # TODO change to just outputs.csv
+    gen_fn = os.path.join(experiment_dir, 'outputs.csv')
     gen_df = pd.read_csv(gen_fn)
     gen_df = gen_df.assign(
         prediction_tagged=gen_df['prediction'].apply(
