@@ -738,7 +738,7 @@ try:
     conn = pymysql.connect(db='SecTag_Terminology',
                            host='localhost',
                            user='sectag',
-                           passwd='sectag')
+                           passwd=os.environ['SECTAG_PWD'])
 
     log("Connected to SecTag_Terminology database.")
 
