@@ -7,7 +7,7 @@ pandas==1.3.0
 pytorch-lightning==1.6.0
 p_tqdm
 tqdm
-scipy==1.7.0
+scipy==1.10.0
 scispacy==0.4.0
 nltk
 jsonlines
