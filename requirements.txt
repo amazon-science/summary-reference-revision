@@ -13,7 +13,7 @@ nltk
 jsonlines
 ratelimit
 torch==1.8.1+cu101 -f https://download.pytorch.org/whl/cu101/torch_stable.html
-transformers==4.8.2
+transformers==4.30.0
 ujson
 https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.4.0/en_core_sci_sm-0.4.0.tar.gz
 https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.3.0/en_core_sci_lg-0.3.0.tar.gz
